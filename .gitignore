@@ -1,0 +1,32 @@
+# Data directories
+/data/*
+!/data/.gitkeep
+
+# Environment files
+.env
+.env.local
+
+# Certificates (not used in this setup but included for safety)
+*.crt
+*.key
+*.pem
+root.crt
+
+# Docker volumes (managed by Docker)
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Backup files
+*.backup
+*.bak
+*.tar.gz

@@ -1,0 +1,33 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+    silent: true
+
+
+  reset:
+    desc: Reset the project to a clean state
+    cmds:
+      - docker compose down -v
+      - sudo rm -fR data/vector_db/ data/cache
+      - task: start
+
+
+  start:
+    desc: Start the project
+    cmds:
+      - docker compose up -d --remove-orphans
+      - task: logs
+
+
+  logs:
+    desc: Show the logs of the project
+    cmds:
+      - docker compose logs -f

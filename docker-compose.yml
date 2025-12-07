@@ -1,0 +1,67 @@
+
+services:
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:latest
+    container_name: openwebui
+    restart: unless-stopped
+    ports:
+      - "${OPENWEBUI_PORT:-8080}:8080"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      # Ollama Configuration
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+      
+      # Authentication Settings
+      - WEBUI_AUTH=${WEBUI_AUTH:-false}
+      - ENABLE_SIGNUP=${ENABLE_SIGNUP:-false}
+      
+      # Security
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+      
+      # Model Configuration
+      - DEFAULT_MODELS=${DEFAULT_MODELS:-}
+      
+      # RAG Configuration
+      - ENABLE_RAG_WEB_SEARCH=${ENABLE_RAG_WEB_SEARCH:-false}
+      - RAG_EMBEDDING_MODEL=${RAG_EMBEDDING_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+      - CHUNK_SIZE=${CHUNK_SIZE:-1500}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-100}
+      
+      # Image Generation
+      - ENABLE_IMAGE_GENERATION=${ENABLE_IMAGE_GENERATION:-false}
+      - IMAGE_GENERATION_ENGINE=${IMAGE_GENERATION_ENGINE:-}
+      
+      # Logging
+      - WEBUI_LOG_LEVEL=${WEBUI_LOG_LEVEL:-INFO}
+      
+      # Additional Settings
+      - DEFAULT_USER_ROLE=${DEFAULT_USER_ROLE:-user}
+      - ENABLE_COMMUNITY_SHARING=${ENABLE_COMMUNITY_SHARING:-false}
+      
+    volumes:
+      # Persistent data (configuration, database, chat history)
+      - ./data:/app/backend/data
+      
+      # Volatile data (cache and vector database)
+      #- openwebui_cache:/app/backend/data/cache
+      #- openwebui_vector_db:/app/backend/data/vector_db
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# volumes:
+#   openwebui_cache:
+#     name: openwebui_cache
+#   openwebui_vector_db:
+#     name: openwebui_vector_db
