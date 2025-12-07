@@ -13,6 +13,7 @@ A production-ready Docker Compose setup for deploying [Open WebUI](https://githu
 - ✅ Built-in health monitoring
 - ✅ Automatic container restart
 - ✅ Structured logging
+- ✅ Optional SearXNG integration for privacy-focused web search
 
 ## 📋 Prerequisites
 
@@ -111,6 +112,8 @@ All configuration is managed through the `.env` file. Key variables include:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `ENABLE_RAG_WEB_SEARCH` | Enable web search | `false` |
+| `RAG_WEB_SEARCH_ENGINE` | Search engine (searxng/duckduckgo/google) | `searxng` |
+| `SEARXNG_URL` | SearXNG instance URL | `http://searxng:8080` |
 | `RAG_EMBEDDING_MODEL` | Embedding model | `sentence-transformers/all-MiniLM-L6-v2` |
 | `CHUNK_SIZE` | Document chunk size | `1500` |
 | `CHUNK_OVERLAP` | Chunk overlap | `100` |
@@ -120,6 +123,17 @@ All configuration is managed through the `.env` file. Key variables include:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `WEBUI_LOG_LEVEL` | Log level | `INFO` |
+
+#### SearXNG Configuration
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SEARXNG_PORT` | SearXNG service port | `8081` |
+| `SEARXNG_INSTANCE_NAME` | Instance name | `OpenWebUI Search` |
+| `SEARXNG_SECRET_KEY` | Session encryption key | `your-searxng-secret-key-change-this-in-production` |
+| `SEARXNG_SEARCH_LANGUAGE` | Search language | `en` |
+| `SEARXNG_SAFE_SEARCH` | Safe search level (0-2) | `0` |
+| `SEARXNG_JSON_ENGINE` | Enable JSON API | `true` |
 
 For a complete list of available variables, see [`.env.example`](.env.example).
 
@@ -367,11 +381,77 @@ docker-compose up -d
 sudo chown -R $(id -u):$(id -g) data/
 ```
 
+## 🔍 SearXNG Web Search Integration
+
+This setup includes optional integration with [SearXNG](https://docs.searxng.org/), a privacy-focused metasearch engine that aggregates results from multiple search engines without tracking users.
+
+### Benefits of SearXNG
+
+- **Privacy-focused**: No user tracking or profiling
+- **Self-hosted**: Complete control over your search data
+- **Metasearch**: Aggregates results from multiple engines (Google, Bing, DuckDuckGo, etc.)
+- **Customizable**: Configure search engines, filters, and privacy settings
+- **Open source**: Transparent and auditable
+
+### Enabling SearXNG
+
+1. **Start with SearXNG enabled** (default configuration):
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Access SearXNG directly** (optional):
+   ```
+   http://localhost:8081
+   ```
+
+3. **Enable web search in RAG**:
+   ```bash
+   # In .env file
+   ENABLE_RAG_WEB_SEARCH=true
+   RAG_WEB_SEARCH_ENGINE=searxng
+   SEARXNG_URL=http://searxng:8080
+   ```
+
+### SearXNG Configuration
+
+Customize SearXNG behavior in your `.env` file:
+
+```bash
+# SearXNG service configuration
+SEARXNG_PORT=8081
+SEARXNG_INSTANCE_NAME="My Private Search"
+SEARXNG_SECRET_KEY=$(openssl rand -hex 32)
+SEARXNG_SEARCH_LANGUAGE=en
+SEARXNG_SAFE_SEARCH=0  # 0=off, 1=moderate, 2=strict
+```
+
+### Privacy Considerations
+
+- SearXNG acts as a proxy between OpenWebUI and commercial search engines
+- No search history is stored by default
+- Requests are anonymized before being sent to search engines
+- Consider using a VPN for additional privacy
+
+### Troubleshooting SearXNG
+
+```bash
+# Check SearXNG logs
+docker-compose logs searxng
+
+# Test SearXNG health
+curl http://localhost:8081/healthz
+
+# Test search functionality
+curl "http://localhost:8080/search?q=test&format=json"
+```
+
 ## 📚 Additional Resources
 
 - [Open WebUI Documentation](https://docs.openwebui.com/)
 - [Ollama Documentation](https://ollama.ai/docs)
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [SearXNG Documentation](https://docs.searxng.org/)
 
 ## 📝 License
 

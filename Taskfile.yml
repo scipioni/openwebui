@@ -31,3 +31,42 @@ tasks:
     desc: Show the logs of the project
     cmds:
       - docker compose logs -f
+
+
+  logs:searxng:
+    desc: Show SearXNG logs
+    cmds:
+      - docker compose logs -f searxng
+
+
+  test:searxng:
+    desc: Test SearXNG functionality
+    cmds:
+      - echo "Testing SearXNG health endpoint..."
+      - curl -s http://localhost:8081/healthz || echo "SearXNG health check failed"
+      - echo "Testing SearXNG search API..."
+      - curl -s "http://localhost:8081/search?q=test&format=json" | head -20 || echo "SearXNG search test failed"
+
+
+  test:rag-search:
+    desc: Test RAG web search functionality
+    cmds:
+      - echo "Testing RAG web search configuration..."
+      - echo "OpenWebUI RAG web search settings:"
+      - docker compose exec openwebui env | grep -E "(RAG_WEB_SEARCH|SEARXNG)" || echo "RAG search not configured"
+
+
+  status:
+    desc: Show status of all services
+    cmds:
+      - echo "=== Docker Compose Status ==="
+      - docker compose ps
+      - echo ""
+      - echo "=== Service Health Checks ==="
+      - |
+        echo "OpenWebUI health: $(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health || echo 'FAILED')"
+      - |
+        echo "SearXNG health: $(curl -s -o /dev/null -w '%{http_code}' http://localhost:8081/healthz || echo 'FAILED')"
+      - echo ""
+      - echo "=== Port Status ==="
+      - netstat -tlnp 2>/dev/null | grep -E ':(8080|8081)' || ss -tlnp 2>/dev/null | grep -E ':(8080|8081)' || echo "Port check requires netstat or ss"
